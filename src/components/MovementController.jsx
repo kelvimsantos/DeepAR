@@ -22,7 +22,7 @@ export const MovementController = () => {
       moveDir.copy(cameraDir).cross(new Vector3(0, -1, 0)).normalize();
     }
 
-    const speed = 5;
+    const speed = 2;
     const currentVel = playerRigidBody.linvel();
     playerRigidBody.setLinvel(
       {

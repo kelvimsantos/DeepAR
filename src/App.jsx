@@ -21,11 +21,12 @@ function App() {
           border: 'none',
           borderRadius: 8,
           fontSize: 18,
+          cursor: 'pointer',
         }}
         sessionInit={{
           requiredFeatures: ['hit-test'],
           optionalFeatures: ['dom-overlay'],
-          domOverlay: { root: document.body }, // Permite que a UI do DOM seja sobreposta
+          domOverlay: { root: document.body },
         }}
       />
 
@@ -45,12 +46,12 @@ function App() {
           position: 'fixed',
           top: 0,
           left: 0,
-          pointerEvents: 'none', // CANAL CRÍTICO: deixa os toques passarem para os botões
+          pointerEvents: 'none', // Permite toques passarem para a UI
           zIndex: 1,
         }}
-        camera={{ position: [0, 2, 5], fov: 60 }} // Posição inicial para debug
-      >
-        <ambientLight intensity={1.2} />
+        camera={{ near: 0.1 , far: 1000 , position:[0, 5, 5], rotation:[-0.6, 0, 0]}}
+      > 
+      <ambientLight intensity={1.2} />
           <directionalLight position={[5, 10, 5]} intensity={2} />
         <XR
           sessionInit={{

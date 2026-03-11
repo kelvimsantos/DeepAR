@@ -1,31 +1,63 @@
-import { useEffect, useRef } from 'react';
-import useGameStore from '../hooks/useGameStore';
-
+import { useEffect, useRef } from "react";
+import { useThree } from '@react-three/fiber'; // Para acessar a câmera (opcional)
+ import useGameStore from '../hooks/useGameStore';
 export function JoystickOverlay() {
   const moveActive = useRef(false);
-  const { setMovementDirection } = useGameStore();
+  const moveTouchId = useRef(null);
+  // Precisamos de uma referência para o player. Vamos obtê-la de um contexto ou store.
+  // Por enquanto, vamos assumir que o player se registra em um store. 
+  // Mas para simplificar, podemos usar um ref global. Vou usar uma solução simples: 
+  // o player será acessado via store, como antes.
+  // Vamos importar o store e usar playerRigidBody.
+ 
+  const { playerRigidBody } = useGameStore();
 
   useEffect(() => {
     console.log('🎮 JoystickOverlay montado');
 
     const handleTouchStart = (e) => {
+      if (!playerRigidBody) {
+        console.log('⏳ Aguardando playerRigidBody...');
+        return;
+      }
+
       const touch = e.touches[0];
       if (!touch) return;
 
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Área de movimento: 70% inferior da tela, lado esquerdo
-      if (touch.clientY > screenH * 0.3 && touch.clientX < screenW / 2) {
+      // Área segura (70% inferior da tela)
+      if (touch.clientY < screenH * 0.7) return;
+
+      // Área de movimento (esquerda)
+      if (touch.clientX < screenW / 2) {
         moveActive.current = true;
+        moveTouchId.current = touch.identifier;
         console.log('✅ Movimento ativado');
-        // Não definimos direção ainda, só ativamos o movimento.
-        // A direção será calculada no handleTouchMove.
+      } 
+      // Área de pulo (direita)
+      else {
+        console.log('🦘 Pulo');
+        const vel = playerRigidBody.linvel();
+        // Remove a verificação de velocidade vertical para permitir pulo mesmo em queda?
+        // Vou manter, mas adicionar um log para ver se entra.
+        if (Math.abs(vel.y) < 0.1) {
+          playerRigidBody.setLinvel(
+            { x: vel.x, y: 5, z: vel.z },
+            true
+          );
+          console.log('✅ Pulo aplicado');
+        } else {
+          console.log('❌ Não pode pular (vel.y =', vel.y, ')');
+        }
       }
     };
 
     const handleTouchMove = (e) => {
-      if (!moveActive.current) return;
+      if (!moveActive.current || !playerRigidBody || !playerRigidBody.currentMoveDir) {
+        return;
+      }
 
       const touch = e.touches[0];
       if (!touch) return;
@@ -33,43 +65,37 @@ export function JoystickOverlay() {
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Centro da área de movimento (ajuste fino)
+      // Centro da área de movimento (canto inferior esquerdo)
       const centerX = screenW / 4;
-      const centerY = screenH - 150;
+      const centerY = screenH - 100;
 
-      // Calcula o vetor de direção
+      // Calcula direção
       let dx = (touch.clientX - centerX) / 80;
       let dy = (touch.clientY - centerY) / 80;
 
-      // Limita ao círculo unitário
+      // Limita ao círculo
       const length = Math.sqrt(dx * dx + dy * dy);
       if (length > 1) {
         dx /= length;
         dy /= length;
       }
 
-      // Converte o vetor em uma direção cardinal (top-down: dx = esquerda/direita, dy = frente/trás)
-      // Importante: dy negativo significa para frente (para cima na tela), dy positivo para trás.
-      const threshold = 0.3;
-      let dir = null;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > threshold) dir = 'right';
-        else if (dx < -threshold) dir = 'left';
-      } else {
-        if (dy < -threshold) dir = 'forward'; // dy negativo = cima da tela = frente
-        else if (dy > threshold) dir = 'backward';
-      }
-
-      if (dir) {
-        setMovementDirection(dir);
-      }
+      // Inverte Y e aplica
+      playerRigidBody.currentMoveDir.current = { 
+        x: dx, 
+        z: -dy 
+      };
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e) => {
       if (moveActive.current) {
         moveActive.current = false;
+        moveTouchId.current = null;
         console.log('⏹️ Movimento parado');
-        setMovementDirection(null);
+
+        if (playerRigidBody?.currentMoveDir) {
+          playerRigidBody.currentMoveDir.current = { x: 0, z: 0 };
+        }
       }
     };
 
@@ -84,7 +110,7 @@ export function JoystickOverlay() {
       document.removeEventListener('touchend', handleTouchEnd);
       document.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [setMovementDirection]);
+  }, [playerRigidBody]);
 
   return null;
 }
