@@ -61,7 +61,7 @@ function App() {
           }}
         >
           <Physics gravity={[0, -9.81, 0]}>
-            <ARScene />
+            <ARScene position={[-3, 0, 0]} />
           </Physics>
         </XR>
       </Canvas>
