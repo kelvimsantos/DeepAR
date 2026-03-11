@@ -102,7 +102,7 @@ export const Player = () => {
         {/* Cubo visível (opcional) */}
         <mesh>
           <boxGeometry args={[0.2, 0.5, 0.2]} />
-          <meshStandardMaterial color="hotpink" emissive="darkred" />
+          <meshStandardMaterial color="hotpink" emissive="darkred" transparent={true} opacity={0} />
         </mesh>
 
         {/* Modelo animado */}
