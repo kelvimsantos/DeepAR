@@ -1,3 +1,4 @@
+// src/components/JoystickOverlay.jsx
 import { useEffect, useRef } from 'react';
 import useGameStore from '../hooks/useGameStore';
 
@@ -7,14 +8,8 @@ export function JoystickOverlay() {
   const { playerRigidBody, setMovementDirection } = useGameStore();
 
   useEffect(() => {
-    console.log('🎮 JoystickOverlay montado');
-
     const handleTouchStart = (e) => {
-      // Não previne padrão para não bloquear botão AR
-      if (!playerRigidBody) {
-        console.log('⏳ Aguardando playerRigidBody...');
-        return;
-      }
+      if (!playerRigidBody) return;
 
       const touch = e.touches[0];
       if (!touch) return;
@@ -22,24 +17,23 @@ export function JoystickOverlay() {
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Área segura (70% inferior da tela)
+      // Só ativa se tocar nos 30% inferiores da tela
       if (touch.clientY < screenH * 0.7) return;
 
-      // Área de movimento (esquerda)
+      // Lado esquerdo (movimento)
       if (touch.clientX < screenW / 2) {
         moveActive.current = true;
         moveTouchId.current = touch.identifier;
-        console.log('✅ Movimento ativado');
-      }
-      // Área de pulo (direita) – opcional, pode remover
+        console.log('Movimento ativado');
+      } 
+      // Lado direito (pulo)
       else {
-        console.log('🦘 Pulo');
-        const vel = playerRigidBody.linvel();
-        if (Math.abs(vel.y) < 0.1) {
-          playerRigidBody.setLinvel(
-            { x: vel.x, y: 5, z: vel.z },
-            true
-          );
+        console.log('Pulo');
+        if (playerRigidBody) {
+          const vel = playerRigidBody.linvel();
+          if (Math.abs(vel.y) < 0.1) {
+            playerRigidBody.setLinvel({ x: vel.x, y: 5, z: vel.z }, true);
+          }
         }
       }
     };
@@ -53,11 +47,11 @@ export function JoystickOverlay() {
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Centro da área de movimento
+      // Centro da área de movimento (canto inferior esquerdo)
       const centerX = screenW / 4;
       const centerY = screenH - 100;
 
-      // Calcula direção
+      // Calcula vetor direção
       let dx = (touch.clientX - centerX) / 80;
       let dy = (touch.clientY - centerY) / 80;
 
@@ -68,23 +62,18 @@ export function JoystickOverlay() {
         dy /= length;
       }
 
-      // Converte para direção cardinal (simplificado para 4 direções)
-      // Se quiser analógico, precisaria de outra lógica, mas vamos manter 4 direções
-      const angle = Math.atan2(dy, dx); // dy é vertical, dx horizontal
-      const threshold = 0.5;
+      // Converte para direção cardinal (4 direções)
       let dir = null;
+      const threshold = 0.5;
       if (Math.abs(dx) > Math.abs(dy)) {
         if (dx > threshold) dir = 'right';
         else if (dx < -threshold) dir = 'left';
       } else {
-        if (dy > threshold) dir = 'forward'; // lembre-se que dy positivo para baixo, então ajuste
-        else if (dy < -threshold) dir = 'backward';
+        // Inverte dy porque no celular positivo é para baixo
+        if (dy > threshold) dir = 'backward'; // para trás
+        else if (dy < -threshold) dir = 'forward'; // para frente
       }
-      // Invertemos dy porque na tela, positivo é para baixo
-      // Mas vamos usar a lógica original do projeto: z = -dy
-      // Para simplificar, vou usar a mesma lógica do MovementController
-      // Melhor: usar os eixos x e z diretamente, mas o MovementController espera direção cardinal.
-      // Por simplicidade, vamos continuar usando a direção cardinal.
+
       if (dir) setMovementDirection(dir);
     };
 
@@ -92,7 +81,6 @@ export function JoystickOverlay() {
       if (moveActive.current) {
         moveActive.current = false;
         moveTouchId.current = null;
-        console.log('⏹️ Movimento parado');
         setMovementDirection(null);
       }
     };
