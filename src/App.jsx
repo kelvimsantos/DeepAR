@@ -24,6 +24,8 @@ function App() {
         }}
         sessionInit={{
           requiredFeatures: ['hit-test'],
+          optionalFeatures: ['dom-overlay'],
+          domOverlay: { root: document.body }, // Permite que a UI do DOM seja sobreposta
         }}
       />
 
@@ -34,31 +36,29 @@ function App() {
       {/* Overlay que captura os toques */}
       <JoystickOverlay />
 
-        {/* UI DE TESTE - UM GRANDE QUADRADO VERMELHO */}
-      <div style={{
-        position: 'fixed',
-        bottom: '50px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '200px',
-        height: '200px',
-        backgroundColor: 'red',
-        zIndex: 10001,
-        pointerEvents: 'auto',
-        borderRadius: '20px',
-        opacity: 0.9,
-      }}>
-        <p style={{ color: 'white', textAlign: 'center' }}>UI TESTE</p>
-      </div>
-
       <Canvas
         gl={{ alpha: true }}
-        style={{ width: '100vw', height: '100vh', background: 'transparent' }}
-        camera={{ near: 0.1, far: 1000 }}
+        style={{
+          width: '100vw',
+          height: '100vh',
+          background: 'transparent',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none', // CANAL CRÍTICO: deixa os toques passarem para os botões
+          zIndex: 1,
+        }}
+        camera={{ position: [0, 2, 5], fov: 60 }} // Posição inicial para debug
       >
-         <ambientLight intensity={1.2} />
+        <ambientLight intensity={1.2} />
           <directionalLight position={[5, 10, 5]} intensity={2} />
-        <XR>
+        <XR
+          sessionInit={{
+            requiredFeatures: ['hit-test'],
+            optionalFeatures: ['dom-overlay'],
+            domOverlay: { root: document.body },
+          }}
+        >
           <Physics gravity={[0, -9.81, 0]}>
             <ARScene />
           </Physics>

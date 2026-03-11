@@ -1,45 +1,31 @@
-// src/components/JoystickOverlay.jsx
 import { useEffect, useRef } from 'react';
 import useGameStore from '../hooks/useGameStore';
 
 export function JoystickOverlay() {
   const moveActive = useRef(false);
-  const moveTouchId = useRef(null);
-  const { playerRigidBody, setMovementDirection } = useGameStore();
+  const { setMovementDirection } = useGameStore();
 
   useEffect(() => {
-    const handleTouchStart = (e) => {
-      if (!playerRigidBody) return;
+    console.log('🎮 JoystickOverlay montado');
 
+    const handleTouchStart = (e) => {
       const touch = e.touches[0];
       if (!touch) return;
 
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Só ativa se tocar nos 30% inferiores da tela
-      if (touch.clientY < screenH * 0.7) return;
-
-      // Lado esquerdo (movimento)
-      if (touch.clientX < screenW / 2) {
+      // Área de movimento: 70% inferior da tela, lado esquerdo
+      if (touch.clientY > screenH * 0.3 && touch.clientX < screenW / 2) {
         moveActive.current = true;
-        moveTouchId.current = touch.identifier;
-        console.log('Movimento ativado');
-      } 
-      // Lado direito (pulo)
-      else {
-        console.log('Pulo');
-        if (playerRigidBody) {
-          const vel = playerRigidBody.linvel();
-          if (Math.abs(vel.y) < 0.1) {
-            playerRigidBody.setLinvel({ x: vel.x, y: 5, z: vel.z }, true);
-          }
-        }
+        console.log('✅ Movimento ativado');
+        // Não definimos direção ainda, só ativamos o movimento.
+        // A direção será calculada no handleTouchMove.
       }
     };
 
     const handleTouchMove = (e) => {
-      if (!moveActive.current || !playerRigidBody) return;
+      if (!moveActive.current) return;
 
       const touch = e.touches[0];
       if (!touch) return;
@@ -47,40 +33,42 @@ export function JoystickOverlay() {
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Centro da área de movimento (canto inferior esquerdo)
+      // Centro da área de movimento (ajuste fino)
       const centerX = screenW / 4;
-      const centerY = screenH - 100;
+      const centerY = screenH - 150;
 
-      // Calcula vetor direção
+      // Calcula o vetor de direção
       let dx = (touch.clientX - centerX) / 80;
       let dy = (touch.clientY - centerY) / 80;
 
-      // Limita ao círculo
+      // Limita ao círculo unitário
       const length = Math.sqrt(dx * dx + dy * dy);
       if (length > 1) {
         dx /= length;
         dy /= length;
       }
 
-      // Converte para direção cardinal (4 direções)
+      // Converte o vetor em uma direção cardinal (top-down: dx = esquerda/direita, dy = frente/trás)
+      // Importante: dy negativo significa para frente (para cima na tela), dy positivo para trás.
+      const threshold = 0.3;
       let dir = null;
-      const threshold = 0.5;
       if (Math.abs(dx) > Math.abs(dy)) {
         if (dx > threshold) dir = 'right';
         else if (dx < -threshold) dir = 'left';
       } else {
-        // Inverte dy porque no celular positivo é para baixo
-        if (dy > threshold) dir = 'backward'; // para trás
-        else if (dy < -threshold) dir = 'forward'; // para frente
+        if (dy < -threshold) dir = 'forward'; // dy negativo = cima da tela = frente
+        else if (dy > threshold) dir = 'backward';
       }
 
-      if (dir) setMovementDirection(dir);
+      if (dir) {
+        setMovementDirection(dir);
+      }
     };
 
-    const handleTouchEnd = (e) => {
+    const handleTouchEnd = () => {
       if (moveActive.current) {
         moveActive.current = false;
-        moveTouchId.current = null;
+        console.log('⏹️ Movimento parado');
         setMovementDirection(null);
       }
     };
@@ -96,7 +84,7 @@ export function JoystickOverlay() {
       document.removeEventListener('touchend', handleTouchEnd);
       document.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [playerRigidBody, setMovementDirection]);
+  }, [setMovementDirection]);
 
   return null;
 }

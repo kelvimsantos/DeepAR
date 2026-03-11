@@ -3,70 +3,25 @@
   padding: 0;
   box-sizing: border-box;
 }
-
 html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
-
 body {
   margin: 0;
   overflow: hidden;
 }
-
 canvas {
   position: absolute !important;
   top: 0;
   left: 0;
   z-index: 1;
-  pointer-events: none; /* Adicionei para garantir que toques passem */
-}
-
-/* Estilo dos joysticks (visuais) */
-.joystick {
-  position: fixed;
-  bottom: 80px;
-  left: 40px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  border: 2px solid rgba(255,255,255,0.6);
-  z-index: 10;
-  touch-action: none;
-  pointer-events: auto;
-}
-
-.joystick.right {
-  left: auto;
-  right: 40px;
-}
-
-/* Área invisível de captura de toque (opcional) */
-.joystick-overlay {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 30%;
-  background: transparent;
-  z-index: 5;
-  pointer-events: none; /* A lógica de toque será feita via document events */
+  pointer-events: none; /* Já definido inline, mas aqui como fallback */
 }
 
 .joystick {
-  position: fixed;
-  bottom: 80px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  z-index: 10;
-  touch-action: none;
-  pointer-events: auto;
-  backdrop-filter: blur(5px); /* efeito de vidro fosco */
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  transition: transform 0.1s ease;
+  touch-action: none; /* Previne o scroll da página ao tocar no joystick */
 }
 
 .joystick.left {
@@ -76,35 +31,4 @@ canvas {
 .joystick.right {
   left: auto;
   right: 40px;
-}
-
-/* Efeito de toque (ativo) */
-.joystick.active {
-  transform: scale(1.1);
-  background-color: rgba(255, 255, 255, 0.3) !important;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  margin: 0;
-  overflow: hidden;
-}
-
-canvas {
-  position: absolute !important;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  pointer-events: none;
 }

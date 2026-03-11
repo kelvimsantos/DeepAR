@@ -8,26 +8,26 @@ export const MovementController = () => {
   useFrame(({ camera }) => {
     if (!playerRigidBody || !movementDirection) return;
 
-    const cameraDirection = new Vector3(0, 0, 0);
-    camera.getWorldDirection(cameraDirection);
-    cameraDirection.y = 0;
-    cameraDirection.normalize();
+    const cameraDir = new Vector3(0, 0, 0);
+    camera.getWorldDirection(cameraDir);
+    cameraDir.y = 0;
+    cameraDir.normalize();
 
     const moveDir = new Vector3(0, 0, 0);
-    if (movementDirection === 'forward') moveDir.copy(cameraDirection);
-    if (movementDirection === 'backward') moveDir.copy(cameraDirection).negate();
-    if (movementDirection === 'left') {
-      moveDir.copy(cameraDirection).cross(new Vector3(0, 1, 0)).normalize();
-    }
-    if (movementDirection === 'right') {
-      moveDir.copy(cameraDirection).cross(new Vector3(0, -1, 0)).normalize();
+    if (movementDirection === 'forward') moveDir.copy(cameraDir);
+    else if (movementDirection === 'backward') moveDir.copy(cameraDir).negate();
+    else if (movementDirection === 'left') {
+      moveDir.copy(cameraDir).cross(new Vector3(0, 1, 0)).normalize();
+    } else if (movementDirection === 'right') {
+      moveDir.copy(cameraDir).cross(new Vector3(0, -1, 0)).normalize();
     }
 
     const speed = 5;
+    const currentVel = playerRigidBody.linvel();
     playerRigidBody.setLinvel(
       {
         x: moveDir.x * speed,
-        y: playerRigidBody.linvel().y,
+        y: currentVel.y,
         z: moveDir.z * speed,
       },
       true
