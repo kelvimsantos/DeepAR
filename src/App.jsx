@@ -34,6 +34,23 @@ function App() {
       {/* Overlay que captura os toques */}
       <JoystickOverlay />
 
+        {/* UI DE TESTE - UM GRANDE QUADRADO VERMELHO */}
+      <div style={{
+        position: 'fixed',
+        bottom: '50px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '200px',
+        height: '200px',
+        backgroundColor: 'red',
+        zIndex: 10001,
+        pointerEvents: 'auto',
+        borderRadius: '20px',
+        opacity: 0.9,
+      }}>
+        <p style={{ color: 'white', textAlign: 'center' }}>UI TESTE</p>
+      </div>
+
       <Canvas
         gl={{ alpha: true }}
         style={{ width: '100vw', height: '100vh', background: 'transparent' }}
