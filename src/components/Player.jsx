@@ -36,12 +36,22 @@ export const Player = () => {
     console.log('Trocando animação para:', name);
   };
 
+  const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   // Atualiza a cada frame: movimento e detecção de chão
   useFrame(({ camera }) => {
+
+    const position = rigidBodyRef.current.translation();
+setPlayerPosition({ x: position.x, y: position.y, z: position.z });
+
+
     if (!rigidBodyRef.current) return;
 
     const { x: dx, z: dz } = moveDir.current;
     const currentVel = rigidBodyRef.current.linvel();
+
+
+     const pos = rigidBodyRef.current.translation();
+  setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z });
 
     // Detecção de chão simplificada
     const grounded = Math.abs(currentVel.y) < 0.1;

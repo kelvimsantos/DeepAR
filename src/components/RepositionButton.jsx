@@ -5,31 +5,25 @@ import useGameStore from '../hooks/useGameStore';
 
 export const RepositionButton = () => {
   const { camera } = useThree();
-  const { worldGroupRef, playerRigidBody } = useGameStore();
+  const { worldGroupRef, playerPosition } = useGameStore();
 
   const handleReposition = () => {
-    if (!worldGroupRef || !playerRigidBody) return;
-
-    // Obtém a posição atual do jogador no mundo
-    const playerPos = playerRigidBody.translation();
+    if (!worldGroupRef) return;
 
     // Queremos que o jogador fique a 2 metros da câmera
     const idealDistance = 2;
     const cameraPos = camera.position.clone();
+    const playerPos = new Vector3(playerPosition.x, playerPosition.y, playerPosition.z);
 
     // Direção da câmera para o jogador (atual)
-    const camToPlayer = new Vector3(playerPos.x, playerPos.y, playerPos.z)
-      .sub(cameraPos)
-      .normalize();
-
-    // Nova posição desejada para o jogador (a 2m da câmera na mesma direção)
+    const camToPlayer = playerPos.clone().sub(cameraPos).normalize();
+    // Onde queremos que o jogador esteja: na mesma direção, mas a idealDistance de distância
     const targetPlayerPos = cameraPos.clone().add(camToPlayer.multiplyScalar(idealDistance));
+    // Deslocamento necessário: targetPlayerPos - playerPos
+    const delta = targetPlayerPos.clone().sub(playerPos);
 
-    // Calcula quanto o mundo precisa se mover para que o jogador chegue a targetPlayerPos
-    const delta = targetPlayerPos.clone().sub(new Vector3(playerPos.x, playerPos.y, playerPos.z));
-
-    // Move o grupo do mundo (que contém todos os objetos)
-    worldGroupRef.current.position.add(delta);
+    // Aplica o deslocamento ao grupo do mundo
+    worldGroupRef.position.add(delta);
   };
 
   return (
