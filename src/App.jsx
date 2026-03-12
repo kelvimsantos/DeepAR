@@ -49,7 +49,7 @@ function App() {
           pointerEvents: 'none', // Permite toques passarem para a UI
           zIndex: 1,
         }}
-        camera={{ near: 0.1 , far: 1000 , position:[0, 5, 5], rotation:[-0.6, 0, 0]}}
+        camera={{ near: 0.1 , far: 1000 , position:[0, 5, 5], rotation:[-1, 0, 0]}}
       > 
       <ambientLight intensity={1.2} />
           <directionalLight position={[5, 10, 5]} intensity={2} />

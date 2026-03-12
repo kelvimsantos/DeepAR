@@ -16,7 +16,7 @@ const ARScene = () => {
   return (
     <>
       {/* Grupo posicionado a 2 metros na frente da câmera */}
-      <group ref={worldGroupRef} position={[0, -1, -8] }  >
+      <group ref={worldGroupRef} position={[0, -1, -9] }  >
         <Player />
         <World />
         <MovementController />
