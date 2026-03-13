@@ -1,24 +1,24 @@
 import { RigidBody } from '@react-three/rapier';
-import { Box } from '@react-three/drei';
+import { Box, useGLTF } from '@react-three/drei';
 
 export const World = () => {
+  // Carrega o modelo GLB do terreno (exportado do editor)
+  const { scene: terrainScene } = useGLTF('/models/terrain1.glb');
+
   return (
     <>
-      {/* Chão verde sólido */}
+      {/* Terreno vindo do GLB */}
       <RigidBody type="fixed" colliders="trimesh">
-        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="green" />
-        </mesh>
+        <primitive object={terrainScene.clone()} />
       </RigidBody>
 
-      {/* Cubo de referência vermelho */}
+      {/* (Opcional) Cubo de referência vermelho - pode remover depois */}
       <mesh position={[0, 0.5, 0]}>
         <boxGeometry args={[0.3, 0.3, 0.3]} />
         <meshStandardMaterial color="red" emissive="darkred" />
       </mesh>
 
-      {/* Obstáculos */}
+      {/* Obstáculos de exemplo (podem ser substituídos pelo JSON futuramente) */}
       <RigidBody colliders="cuboid" position={[2, 1, 2]}>
         <Box args={[1, 2, 1]}>
           <meshStandardMaterial color="cyan" />

@@ -1,0 +1,36 @@
+{
+  "objects": [
+    {
+      "id": "cffc7f3e-5d2c-4b93-97a1-1911e86ac9fb",
+      "modelPath": "/models/pine_tree.glb",
+      "name": "Objeto 1",
+      "position": [
+        -3.6895016606502797,
+        0.625992025115927,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        0.006,
+        0.006,
+        0.006
+      ]
+    }
+  ],
+  "terrainParams": {
+    "size": 20,
+    "resolution": 64,
+    "heightmap": [],
+    "textures": {
+      "grass": "/textures/grass.jpg",
+      "rock": "/textures/rock.jpg",
+      "sand": "/textures/sand.jpg"
+    },
+    "splatMap": null
+  }
+}
