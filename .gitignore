@@ -28,7 +28,7 @@ node_modules/
 package-lock.json
 
 # Build
-dist/
+
 build/
 out/
 
