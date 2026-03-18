@@ -3,7 +3,7 @@ import { Box, useGLTF } from '@react-three/drei';
 
 export const World = () => {
   // Carrega o modelo GLB do terreno (exportado do editor)
-  const { scene: terrainScene } = useGLTF('/models/terrain1.glb');
+  const { scene: terrainScene } = useGLTF('/models/terreno2.glb');
 
   return (
     <>

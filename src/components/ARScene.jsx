@@ -12,26 +12,29 @@ const ARScene = () => {
   const [sceneData, setSceneData] = useState(null);
   const [loadingError, setLoadingError] = useState(null);
 
+  // Posição de spawn do jogador (ajuste conforme necessário)
+  const playerSpawnPosition = [5, 15, 5]; // [x, y, z] - y = 2 para ficar acima do terreno
+
   useEffect(() => {
     setWorldGroupRef(worldGroupRef.current);
   }, [setWorldGroupRef]);
 
   useEffect(() => {
     fetch('/scene.json')
-  .then(res => {
-    if (!res.ok) {
-      console.log('Resposta não ok, status:', res.status);
-      return res.text().then(text => { throw new Error(`HTTP ${res.status} - ${text.substring(0,100)}`); });
-    }
-    return res.json();
-  })
-  .then(data => {
-    console.log('JSON carregado:', data);
-    setSceneData(data);
-  })
-  .catch(err => {
-    console.error('Erro ao carregar cena:', err);
-  });
+      .then(res => {
+        if (!res.ok) {
+          console.log('Resposta não ok, status:', res.status);
+          return res.text().then(text => { throw new Error(`HTTP ${res.status} - ${text.substring(0,100)}`); });
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('JSON carregado:', data);
+        setSceneData(data);
+      })
+      .catch(err => {
+        console.error('Erro ao carregar cena:', err);
+      });
   }, []);
 
   return (
@@ -45,7 +48,10 @@ const ARScene = () => {
             <meshStandardMaterial color="red" />
           </mesh>
         )}
-        <Player />
+        
+        {/* Player com posição de spawn ajustada */}
+        <Player spawnPosition={playerSpawnPosition} />
+        
         <MovementController />
       </group>
       <RepositionButton />
