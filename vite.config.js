@@ -4,7 +4,6 @@ import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
   plugins: [react(), mkcert()],
-  base: './', // ← adicione esta linha
   server: {
     host: true,
     https: true,
@@ -15,8 +14,9 @@ export default defineConfig({
       'three',
       '@react-three/fiber',
       '@react-three/drei',
-      '@react-three/rapier'
+      '@react-three/rapier'   // <-- adicionado
     ],
     exclude: ['@react-three/xr'],
   },
 });
+
