@@ -48,7 +48,7 @@ const ARScene = () => {
 
   return (
     <>
-      <group ref={worldGroupRef} position={[0, -1, -9]}>
+      <group ref={worldGroupRef} position={[0, -1, -9]}  userData={{ isWorldGroup: true }}  >
         <World />
         {sceneData && <LoadedScene sceneData={sceneData} />}
         
