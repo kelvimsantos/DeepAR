@@ -30,14 +30,12 @@ function App() {
         }}
       />
 
-      {/* Joysticks visuais */}
       <JoystickVisual side="left" />
       <JoystickVisual side="right" />
-
-      {/* Overlay que captura os toques */}
       <JoystickOverlay />
 
       <Canvas
+        shadows
         gl={{ alpha: true }}
         style={{
           width: '100vw',
@@ -46,13 +44,14 @@ function App() {
           position: 'fixed',
           top: 0,
           left: 0,
-          pointerEvents: 'none', // Permite toques passarem para a UI
+          pointerEvents: 'none',
           zIndex: 1,
         }}
-        camera={{ near: 0.1 , far: 1000 , position:[0, 5, 5], rotation:[-1, 0, 0]}}
-      > 
-      <ambientLight intensity={1.2} />
-          <directionalLight position={[5, 10, 5]} intensity={2} />
+        camera={{ near: 0.1, far: 1000, position: [0, 5, 5], rotation: [-1, 0, 0] }}
+      >
+        {/* REMOVIDA a luz direcional fixa - só mantém a ambiente básica */}
+        <ambientLight intensity={0.5} />
+        
         <XR
           sessionInit={{
             requiredFeatures: ['hit-test'],
@@ -61,7 +60,7 @@ function App() {
           }}
         >
           <Physics gravity={[0, -9.81, 0]}>
-            <ARScene position={[-3, 0, 0]} />
+            <ARScene />
           </Physics>
         </XR>
       </Canvas>

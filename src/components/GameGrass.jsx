@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import useGameStore from '../hooks/useGameStore';
+import { getWindStrength, getWindSpeed } from '../config/windConfig';
 
 const createBladeGeometry = (width, height, joints) => {
   const geometry = new THREE.PlaneGeometry(width, height, 1, joints);
@@ -38,10 +39,10 @@ export const GameGrass = ({
   const meshRef = useRef();
   const rigidBodyRef = useRef();
   const timeRef = useRef(0);
-  const originalPositionRef = useRef(null);
-  
-  // Pega a posição do player do store
   const playerPosition = useGameStore((state) => state.playerPosition);
+  
+  const currentWindStrength = useRef(getWindStrength());
+  const currentWindSpeed = useRef(getWindSpeed());
 
   const bladeGeo = useMemo(
     () => createBladeGeometry(grassWidth, grassHeight, 4),
@@ -97,9 +98,11 @@ export const GameGrass = ({
       uniforms: {
         time: { value: 0 },
         bladeHeight: { value: grassHeight },
-        playerPosition: { value: new THREE.Vector3(0, 0, 0) }, // ← NOVO
-        interactionRadius: { value: 0.8 }, // ← NOVO: raio de interação
-        interactionStrength: { value: 0.7 }, // ← NOVO: força da curvatura
+        playerPosition: { value: new THREE.Vector3(0, 0, 0) },
+        interactionRadius: { value: 0.8 },
+        interactionStrength: { value: 0.7 },
+        windSpeed: { value: currentWindSpeed.current },
+        windStrength: { value: currentWindStrength.current },
       },
       vertexShader: `
         attribute float rotation;
@@ -112,6 +115,8 @@ export const GameGrass = ({
         uniform vec3 playerPosition;
         uniform float interactionRadius;
         uniform float interactionStrength;
+        uniform float windSpeed;
+        uniform float windStrength;
 
         void main() {
           vUv = uv;
@@ -127,39 +132,32 @@ export const GameGrass = ({
           rotatedPos.y = pos.y;
           rotatedPos.z = pos.x * s + pos.z * c;
 
-          // VENTO
-          float wind = sin(offset.x * 0.5 + time * 2.0) * cos(offset.z * 0.3 + time * 1.5);
-          wind *= 0.2 * (pos.y / bladeHeight);
-          rotatedPos.x += wind;
-          rotatedPos.z += wind * 0.5;
+          float wind = sin(offset.x * 0.5 + time * windSpeed * 1.5) * cos(offset.z * 0.3 + time * windSpeed * 1.2);
+          wind += sin(offset.x * 1.2 - time * windSpeed * 2.0) * 0.5;
+          wind += cos(offset.z * 0.8 + time * windSpeed * 1.8) * 0.3;
+          wind = wind * windStrength * vHeight;
+          
+          // REDUZIDO: 0.6 -> 0.35 e 0.4 -> 0.25 (menos esticamento)
+          rotatedPos.x += wind * 0.35;
+          rotatedPos.z += wind * 0.25;
 
-          // ===== INTERAÇÃO COM O PLAYER =====
-          // Calcula distância da grama até o player
           vec3 worldPos = rotatedPos + offset;
           float dx = worldPos.x - playerPosition.x;
           float dz = worldPos.z - playerPosition.z;
           float dist = sqrt(dx*dx + dz*dz);
           
-          // Força de curvatura baseada na distância
           float bend = 0.0;
           if (dist < interactionRadius) {
-            // Quanto mais perto, mais curva (queda suave)
             bend = (1.0 - dist / interactionRadius) * interactionStrength;
-            bend = pow(bend, 1.5); // Easing suave
-            // Multiplica pela altura (ponta curva mais)
-            bend *= vHeight;
+            bend = pow(bend, 1.5) * vHeight;
           }
           
-          // Aplica a curvatura na direção contrária ao player
           if (bend > 0.0 && dist > 0.01) {
             vec3 dirToPlayer = normalize(vec3(dx, 0.0, dz));
-            // Curva a grama na direção oposta ao player (abaixa)
             rotatedPos.x += dirToPlayer.x * bend * 0.5;
             rotatedPos.z += dirToPlayer.z * bend * 0.5;
-            // Abaixa um pouco também
             rotatedPos.y -= bend * 0.3;
           }
-          // ===== FIM INTERAÇÃO =====
 
           vec3 finalPos = rotatedPos + offset;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
@@ -171,17 +169,12 @@ export const GameGrass = ({
         uniform float time;
 
         void main() {
-          // Verde escuro na base, amarelo/dourado na ponta
           vec3 greenBase = vec3(0.12, 0.45, 0.10);
           vec3 yellowTip = vec3(0.82, 0.72, 0.22);
           
           vec3 color = mix(greenBase, yellowTip, vHeight);
-          
-          // Variação sutil de cor
-          float variation = sin(vUv.x * 12.0) * 0.08;
+          float variation = sin(vUv.x * 12.0 + time * 5.0) * 0.08;
           color += variation;
-          
-          // Ponta mais clara
           color += pow(vHeight, 1.2) * 0.15;
           
           float alpha = 0.92 - vHeight * 0.12;
@@ -194,25 +187,42 @@ export const GameGrass = ({
   }, [grassHeight]);
 
   useFrame(() => {
-    if (meshRef.current && material) {
-      timeRef.current += 0.01;
-      material.uniforms.time.value = timeRef.current;
-      
-      // Atualiza a posição do player no shader a cada frame
-      if (playerPosition) {
-        material.uniforms.playerPosition.value.set(
-          playerPosition.x,
-          playerPosition.y,
-          playerPosition.z
-        );
-      }
+    if (!meshRef.current || !material) return;
+    
+    const newWindStrength = getWindStrength();
+    const newWindSpeed = getWindSpeed();
+    
+    if (currentWindStrength.current !== newWindStrength) {
+      currentWindStrength.current = newWindStrength;
+      material.uniforms.windStrength.value = newWindStrength;
+    }
+    if (currentWindSpeed.current !== newWindSpeed) {
+      currentWindSpeed.current = newWindSpeed;
+      material.uniforms.windSpeed.value = newWindSpeed;
+    }
+    
+    timeRef.current += 0.016;
+    material.uniforms.time.value = timeRef.current;
+    
+    if (playerPosition) {
+      material.uniforms.playerPosition.value.set(
+        playerPosition.x,
+        playerPosition.y,
+        playerPosition.z
+      );
     }
   });
 
   useEffect(() => {
-    if (meshRef.current && instancedGeo) {
-      meshRef.current.geometry = instancedGeo;
-      meshRef.current.count = finalInstances.offsets.length / 3;
+    if (!meshRef.current || !instancedGeo) return;
+    
+    meshRef.current.geometry = instancedGeo;
+    meshRef.current.count = finalInstances.offsets.length / 3;
+    meshRef.current.receiveShadow = true;
+    meshRef.current.castShadow = false;
+    
+    if (meshRef.current.material) {
+      meshRef.current.material.shadowSide = THREE.FrontSide;
     }
   }, [instancedGeo, finalInstances]);
 
@@ -242,8 +252,8 @@ export const GameGrass = ({
           ref={meshRef}
           args={[null, material, finalInstances.offsets.length / 3]}
           frustumCulled={false}
-          castShadow
-          receiveShadow
+          castShadow={false}
+          receiveShadow={true}
         />
       </group>
     </RigidBody>

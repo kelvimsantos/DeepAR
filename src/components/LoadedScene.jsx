@@ -8,31 +8,26 @@ const SceneObject = ({ data }) => {
   const { scene } = useGLTF(data.modelPath);
   const modelRef = useRef();
 
-  // Opcional: inspecionar a bounding box do modelo
   useEffect(() => {
     if (modelRef.current) {
       const box = new THREE.Box3().setFromObject(modelRef.current);
       console.log('Bounding box do modelo:', box.min, box.max);
-      // Se o mínimo y for negativo, significa que o pivô está no centro e a base está em -altura/2
     }
   }, []);
 
-  // Parâmetros do collider manual (ajuste conforme necessário)
-  // Para uma árvore, talvez um cubo fino (0.5, 1.0, 0.5) centralizado na base
-  // Você pode calcular dinamicamente a partir da bounding box
   const colliderSize = [0.5, 1.0, 0.5];
-  const colliderOffset = [0, 0.5, 0]; // se o pivô está no centro, a base está em -altura/2, então offset +altura/2
+  const colliderOffset = [0, 0.5, 0];
 
   return (
     <RigidBody
       position={data.position}
       rotation={rotation}
       type="fixed"
-      colliders={false} // desativa collider automático
+      colliders={false}
     >
-      {/* Modelo visual (pode precisar de ajuste de posição) */}
+      {/* Modelo visual COM SOMBRAS */}
       <group ref={modelRef} scale={data.scale}>
-        <primitive object={scene.clone()} />
+        <primitive object={scene.clone()} castShadow receiveShadow />
       </group>
 
       {/* Collider manual */}
@@ -42,7 +37,7 @@ const SceneObject = ({ data }) => {
         rotation={rotation}
       />
 
-      {/* Debug: cubo wireframe representando o collider */}
+      {/* Debug: cubo wireframe */}
       <mesh visible={false} position={colliderOffset} rotation={rotation}>
         <boxGeometry args={colliderSize.map(s => s * 2)} />
         <meshStandardMaterial color="red" wireframe />
